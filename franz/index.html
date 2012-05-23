@@ -27,7 +27,7 @@ code { display: block; unicode-bidi: embed; font-family: monospace; white-space:
 <b>About Franz:</b>
 <ul>
   <li>Franz focuses on reuseability.</li>
-  <li>Franz wastes Canvases like crazy.</li>
+  <li>Franz wastes canvases like crazy.</li>
   <li>You put an canvas in there</li>
   <li>A canvas comes out.</li>
   <li>But hey, not the same canvas, but a complete new one.</li>
@@ -62,7 +62,7 @@ the examples below we use jQuery
 <code>&lt;script src="jquery-1.7.2.min.js"&gt;&lt;/script&gt;
 &lt;script src="$PATH_TO_FRANZ/lib/min.js"&gt;&lt;/script&gt;
 </code>
-<script>if(window.franz_prod_setup===true){ document.write('<div>Currently (on this page, at this moment) the  /min.js version of Franz.coffee is used!<\/div>');}else{document.write('<div>Currently (on this page, at this moment) the the <b>development<\/b> version of Franz.coffee is used!<\/div>');}  </script>
+<script>if(window.franz_prod_setup===true){ document.write('<div>Currently (on this page, at this moment) the <b>minified<\/b> version of Franz.coffee is used!<\/div>');}else{document.write('<div>Currently (on this page, at this moment) the the <b>development<\/b> version of Franz.coffee is used!<\/div>');}  </script>
 <div>    
 <br>Oh, all examples are of course written in CoffeeScript.
 </div>
@@ -93,10 +93,14 @@ $(window).load(() ->
 </code>
 Ok, one important part when working with images is, the image must be 'loaded'. This means, that the image must not only be an element in the DOM, but must be completely loaded, otherwise everything you want to do with the image won't work - especially turning it into a canvas won't work. There are two ways to solve this: either wait until the <span class="code">$(img).on('load', ...)</span> event has been fired, or the <span class="code">$(window).on('load', ...)</span> event has been fired (which fires after all the external dependencies has been loaded). Refusing to wait until to the image has been 'loaded' will result into strange bugs down the road. Said that: Franz includes a saftey logic that waits for images to load.
 <br><br>
-<b>Note:</b>Also the image must be within the "same origin restriction" to be handled in canvas (otherwise you get a DOM Security Exception. Yes, it's annoying, but there are workarounds (links to the jquery thingie or write a small server)
+<b>Note:</b> Franz works extensively with callbacks. Using callbacks is strongly recommended. Said that: most of the time (but not alyways), the callbacks are optional. But not for <span class="code">Franz.byImage</span>, for <span class="code">Franz.byImage</span> the callback is mandatory.</br>
+<br><br>
+<b>Note:</b> Ok, every callback gets called with the resulting element, which is in most cases the new, edited canvas. So every callback must look like this <span class="code">(new_awesome_canvas)->doSomethingWithThe(new_awesome_canvas)</span>. The callback has no direct access to the old canvas, you only get the new canvas.</br>
+<br><br>
+<b>Note:</b>Also the image must be within the "same origin restriction" to be transformed into the canvas (otherwise you get a DOM Security Exception. Yes, it's annoying, but rejoice, <a href="http://jadimmock.com/2010/10/bouncy-balls-image-encoding-part-deux/">cirumventing the same origin restriction is a solved problem.</a>
 <hr>
-<h3>Franz.resize(canvas, max_width, max_height, min_width,
-min_height, resize_preference, callback)</h3>
+<h3>Franz.resize(canvas[, max_width=800, max_height, min_width,
+min_height, resize_preference][, callback])</h3>
 <div id="resize_placeholder"></div>
 <code>  #example 2
   Franz.byImage(img,(c)->
@@ -106,9 +110,12 @@ min_height, resize_preference, callback)</h3>
       )
     )
 </code>
+<br><br>
+<b>Note:</b>  "max_width=800" means "max_width defaults to 800". any other obliterated optional parameter defaults to <span class="code">null</span> or <span class="code">undefined</span> (which is pretty much the same thing). If an optional callback ("[, callback]" means the callback is optional) is oblitterated it defaults to <span class="code">()->null</span>.</br><br>
+<b>Note:</b> every Franz function call tries to return a sensmaking value. Most of the time this is the new canvas. So <span class="code">Franz.resize(old_boring_canvas)</span> also returns the <span class="code">new_awesome_canvas</span> (additonally to handling it over the the callback).</br>
 <hr>
 <h3>on('canvasready')</h3>
-In this tutorial, as in real life, we do not want to create canvases out of the same image over and over again, in the same time we don't want to go to callback-hell (sticking callbacks in callbacks of callbacks). Throwing a custom events from time to time i.e.: when a canvas is ready helps (a little). 
+In this tutorial, as in real life, we do not want to create canvases out of the same image over and over again, in the same time we don't want to go to callback-hell (sticking callbacks in callbacks of callbacks). Throwing a custom events from time to time (i.e.: when a canvas is ready) helps (a little). 
 
 <code>  #example 3
   img = $('#testimage')[0]
@@ -127,11 +134,11 @@ In this tutorial, as in real life, we do not want to create canvases out of the 
 </code>
 Basically we fire a "<b>canvasready</b>" event after the image was successfully transformed into a canvas. The event forwards the newly created canvas to the function. I (still) love jQuery, but i didn't want to bring in any jQuery dependencies - so you have, if you want to, implement the <span class="code">trigger('canvasready', c)</span> logic yourself. just keep in mind, that "example-code 2" and "example-code 3" basically do the same stuff. It's just a question of style and application logic.
 <p class="note">
-<b>Note:</b> What is <span class="code">c.id='resizedcanvas'</span> and <span class="code">c.id='canvascool'</span> actuall doing? Well, what it says, it sets the  <span class="code">id=""</span> attribute of the new canvas tag. Why is this important? Oh boy, we are taking a deep dive into the Franz lib now. To keep it simple. Every time a new canvas gets created (with every functionc call) it sets the custom <span class="code">origin=""</span> attribute of the canvas tag, to the last  <span class="code">id=""</span> attribute it encountered. Withthe <span class="code">origin=""</span> attribute the canvas basically know the id of its father (if he had a name, otherwise he knows the name of its grandfather or grand-grandfather ...). As live is much simple if every element has a unique id, it's a good idea to set a unique id as soon as you display an element on-page (and it's an even better idea want to reuse the canvas as input later).
-i.e.: the canvas of "example-code 3" has the html code <span class="code">&lt;canvas width="400" height="300" origin="canvasbyimage" id="resizedcanvas"&gt;&lt;/canvas&gt;</span>
+<b>Note:</b> What is <span class="code">c.id='resizedcanvas'</span> and <span class="code">c.id='canvascool'</span> actuall doing? Well, what it says, it sets the  <span class="code">id=""</span> attribute of the new canvas tag. Why is this important? Oh boy, we are taking a deep dive into the Franz lib now. To keep it simple. Every time a new canvas gets created (with every functionc call) it sets the custom <span class="code">origin=""</span> attribute of the canvas tag, to the last  <span class="code">id=""</span> attribute it encountered. Withthe <span class="code">origin=""</span> attribute the canvas basically know the id of its father (if he had a name, otherwise he knows the name of its grandfather or grand-grandfather ...). As life is much simple if every element has a unique id, it's a good idea to set a unique id as soon as you display an element on-page (and it's an even better idea want to reuse the canvas as input later).
+i.e.: the retrned canvas of "example-code 3" has the html code <span class="code">&lt;canvas width="400" height="300" origin="canvasbyimage" id="resizedcanvas"&gt;&lt;/canvas&gt;</span>
 </p>
 <hr>
-<h3>Franz.scale(canvas, factor, callback)</h3>
+<h3>Franz.scale(canvas[, factor=1][, callback])</h3>
 <div id="scale_placeholder"></div>
 Ok, not lets take the canvas (not the resized one, but the one we created from the image) and scale it down to 10%
 <code>  #example 4
@@ -145,18 +152,18 @@ Ok, not lets take the canvas (not the resized one, but the one we created from t
 the outcome is
 <code>&lt;canvas width="80" height="60" origin="canvasbyimage" id="scaledcanvas">&gt;&lt;/canvas&gt;</code>
 <hr>
-<h3>Franz.crop(canvas, crop_x, crop_y, crop_width, crop_height, callback)</h3>
+<h3>Franz.crop(canvas[, crop_x=0, crop_y=0, crop_width=canvas.width, crop_height=canvas.height][, callback])</h3>
 <div id="crop_placeholder"></div>
 <code>  #example 5
   $(img).on('canvasready', (e,c)->
-    Franz.crop(c, 580, 330, 100, 100, (c) ->
+    Franz.crop(c, 210, 380, 105, 45, (c) ->
       c.id='cropedcanvas'
       $('#crop_placeholder').html(c)
       )
     )
 </code>
 <hr>
-<h3>Franz.invert(canvas, callback)</h3>
+<h3>Franz.invert(canvas[, callback])</h3>
 <div id="invert_placeholder"></div>
 <code>  $(img).on('canvasready', (e,c)->
     Franz.invert(c, (c) ->
@@ -259,11 +266,11 @@ amount ... amount of noise, from 0 to n
 <div id="applyifrgba_placeholder"></div>
 <code></code>
 <hr>
-<h3>Franz.preserveYellow(canvas[, red_threshold=127, green_threshold=127, blue_threshold=50], callback)</h3>
+<h3>Franz.preserveYellow(canvas[, red_threshold=127, green_threshold=127, blue_threshold=50][, callback])</h3>
 <div id="preserveyellow_placeholder"></div>
 <code></code>
 
 <br><br><br>
 <hr>
-<!-- hhmts start -->Last modified: Tue May 22 16:34:16 BOT 2012 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Tue May 22 23:41:14 BOT 2012 <!-- hhmts end -->
 </body> </html>

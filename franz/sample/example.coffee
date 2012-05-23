@@ -24,7 +24,7 @@ $(window).load(() ->
     )
 
   $(img).on('canvasready', (e,c)->
-    Franz.crop(c, 580, 330, 100, 100, (c) ->
+    Franz.crop(c, 210, 380, 105, 45, (c) ->
       c.id='cropedcanvas'
       $('#crop_placeholder').html(c)
       )

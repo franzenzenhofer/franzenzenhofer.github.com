@@ -25,7 +25,7 @@
       });
     });
     $(img).on('canvasready', function(e, c) {
-      return Franz.crop(c, 580, 330, 100, 100, function(c) {
+      return Franz.crop(c, 210, 380, 105, 45, function(c) {
         c.id = 'cropedcanvas';
         return $('#crop_placeholder').html(c);
       });
