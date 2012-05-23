@@ -171,7 +171,7 @@ the outcome is
       )
     )</code>
 <hr>
-<h3>Franz.mosaic(canvas, blocksize, callback)</h3>
+<h3>Franz.mosaic(canvas[, blocksize=10][, callback])</h3>
 <div id="mosaic_placeholder"></div>
 <code>  $(img).on('canvasready', (e,c)->
     Franz.mosaic(c, 8, (c) ->
@@ -181,6 +181,7 @@ the outcome is
 blocksize ... positve pixel size integer
 <hr>
 <h3>Franz.binarize(canvas, threshold, callback)</h3>
+<h2>TODO: remove from lib, use Franz.threshold instead</h2>
 <div id="binarize_placeholder"></div>
 <code>  $(img).on('canvasready', (e,c)->
     Franz.binarize(c, 0.5, (c) ->
@@ -272,5 +273,5 @@ amount ... amount of noise, from 0 to n
 
 <br><br><br>
 <hr>
-<!-- hhmts start -->Last modified: Tue May 22 23:41:14 BOT 2012 <!-- hhmts end -->
+<!-- hhmts start -->Last modified: Tue May 22 23:52:56 BOT 2012 <!-- hhmts end -->
 </body> </html>
